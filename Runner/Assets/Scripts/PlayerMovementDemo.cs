@@ -6,8 +6,9 @@ using UnityEngine;
 public class PlayerMovementDemo : MonoBehaviour {
 
     private Rigidbody rigidBody;
-    public float force;
-    public int jumpForce = 300;
+    public float runForce;
+    public float jumpForce =100f;
+	public bool canJump = true;
     private int counter = 0;
     public Text scoreDisplayer;
     GameObject[] items;
@@ -15,7 +16,7 @@ public class PlayerMovementDemo : MonoBehaviour {
     private void Restart()
     {
         counter = 0;
-        scoreDisplayer.text = "SCORE: " + counter;
+        //scoreDisplayer.text = "SCORE: " + counter;
         transform.position = new Vector3(-10, -2, 0);       
         foreach (GameObject item in items)
         {
@@ -26,17 +27,18 @@ public class PlayerMovementDemo : MonoBehaviour {
     private void Jump()
     {
         rigidBody.AddForce(Vector3.up * jumpForce);
+		canJump = false;
     }
 
     private void GoingForward()
     {
-        gameObject.transform.position += Vector3.right * Time.deltaTime * force;
+		rigidBody.MovePosition(transform.position + transform.forward * Time.deltaTime * runForce);
     }
 
     void Start()
     {
         rigidBody = GetComponent<Rigidbody>();
-        scoreDisplayer.text = "SCORE : " + counter;
+        //scoreDisplayer.text = "SCORE : " + counter;
         items = GameObject.FindGameObjectsWithTag("Pick Up");
     }
 
@@ -44,7 +46,7 @@ public class PlayerMovementDemo : MonoBehaviour {
     private void FixedUpdate()
     {
         GoingForward();
-       if (Input.GetKeyDown("space"))
+		if (Input.GetKeyDown("space") && canJump)
         {
             Jump();
         }
@@ -58,19 +60,20 @@ public class PlayerMovementDemo : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Pick Up"))
-        {
-            other.gameObject.SetActive(false);
-            counter++;
-            scoreDisplayer.text = "SCORE: " + counter;
-        }
-
-        if (other.gameObject.CompareTag("Enemy"))
-        {
-            Restart();
-        }
+		if (other.gameObject.CompareTag ("Pick Up")) {
+			other.gameObject.SetActive (false);
+			counter++;
+			//scoreDisplayer.text = "SCORE: " + counter;
+		} else if (other.gameObject.CompareTag ("Enemy")) {
+			Restart ();
+		}
     }
+		
+	void OnCollisionEnter(Collision col)
+	{
+		if (col.gameObject.CompareTag ("Ground")) {
+			canJump = true;
+		}
+	}
 
 }
-
-
